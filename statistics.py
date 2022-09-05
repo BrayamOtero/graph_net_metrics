@@ -46,6 +46,17 @@ def generateHours():
             hours.append("{}:00".format(h))            
     return hours
 
+def saveInfo(delay, loss, qlen, hours, name_agent):
+    data = {
+        'hour' : hours,
+        'delay' : delay,
+        'loss' : loss,
+        'qlen' : qlen
+    }
+    df = pd.DataFrame(data)
+
+    df.to_csv(''.join(['metrics_',name_agent, '.csv']), index='false')
+
 '''
 Como por cada hora de trafico se hizo dos monitoreos se agrupan entre dos
 '''
@@ -72,7 +83,7 @@ if __name__ == "__main__":
         if option[0] == '--path':
             PATH = option[1]
         if option[0] == '--agent':
-            PATH = option[1]
+            name_agent = option[1]
                     
     cvs_sorted = get_flies_sorted()
     delay = 0
@@ -122,6 +133,8 @@ if __name__ == "__main__":
     delayXhour = getMetricXHour(delay_historic)
     lossXhour = getMetricXHour(loss_historic)
     qlenXhour = getMetricXHour(qlen_historic)
+
+    saveInfo(delayXhour, lossXhour, qlenXhour, hours, name_agent)
 
     plt.bar(hours, delayXhour)
     plt.show()
