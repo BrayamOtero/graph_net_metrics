@@ -9,6 +9,9 @@ import os
 
 PATH = '/home/brayam/Tesis/Daniela/DRSIR-DRL-routing-approach-for-SDN/SDNapps_proac'
 
+def createDir(nameDir):
+    if not os.path.exists(nameDir):
+        os.mkdir(nameDir)
 
 def getNameFiles():
     return os.listdir("{}/Metrics".format(PATH))
@@ -55,7 +58,7 @@ def saveInfo(delay, loss, qlen, hours, name_agent):
     }
     df = pd.DataFrame(data)
 
-    df.to_csv(''.join(['metrics_',name_agent, '.csv']), index='false')
+    df.to_csv(''.join(['./metrics_csv/metrics_',name_agent, '.csv']), index='false')
 
 '''
 Como por cada hora de trafico se hizo dos monitoreos se agrupan entre dos
@@ -84,6 +87,8 @@ if __name__ == "__main__":
             PATH = option[1]
         if option[0] == '--agent':
             name_agent = option[1]
+
+    createDir('metrics_csv')
                     
     cvs_sorted = get_flies_sorted()
     delay = 0
@@ -117,7 +122,7 @@ if __name__ == "__main__":
     # print(delay_historic)
     # print("Loss historic: ")
     # print(loss_historic)
-    with open('./metric_info.csv','w') as csvfile:
+    with open('./metrics_csv/metric_info.csv','w') as csvfile:
         header_names = ['count','delay','pkloss', 'qlen']
         file = csv.writer(csvfile, delimiter=',',quotechar='|', quoting=csv.QUOTE_MINIMAL)        
         file.writerow(header_names)
