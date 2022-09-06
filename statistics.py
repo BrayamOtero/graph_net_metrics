@@ -5,22 +5,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 
-import os
+import manageFiles as mFile
 
 PATH = '/home/brayam/Tesis/Daniela/DRSIR-DRL-routing-approach-for-SDN/SDNapps_proac'
-
-def createDir(nameDir):
-    if not os.path.exists(nameDir):
-        os.mkdir(nameDir)
-
-def getNameFiles():
-    return os.listdir("{}/Metrics".format(PATH))
-
-
-def get_flies_sorted():
-    names_info = getNameFiles()
-    return sorted(names_info, key=lambda x: float(x[:-16]))
-
 
 def getDelayLossMean():
     df = pd.read_csv("{}/Metrics/11_net_metrics.csv".format(PATH))
@@ -58,7 +45,7 @@ def saveInfo(delay, loss, qlen, hours, name_agent):
     }
     df = pd.DataFrame(data)
 
-    df.to_csv(''.join(['./metrics_csv/metrics_',name_agent, '.csv']), index='false')
+    df.to_csv(''.join(['./metrics_csv/metrics_',name_agent, '.csv']), index=False)
 
 '''
 Como por cada hora de trafico se hizo dos monitoreos se agrupan entre dos
@@ -88,9 +75,9 @@ if __name__ == "__main__":
         if option[0] == '--agent':
             name_agent = option[1]
 
-    createDir('metrics_csv')
+    mFile.createDir('metrics_csv')
                     
-    cvs_sorted = get_flies_sorted()
+    cvs_sorted = mFile.get_flies_sorted(PATH)
     delay = 0
     loss = 0
     qlen = 0
