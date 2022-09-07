@@ -65,6 +65,8 @@ if __name__ == "__main__":
     up_to_num = 0
     #nombre del agente para guardarlo en la csv
     name_agent = "default"
+    #graficar todos los datos de los agentes DRL
+    plot_all = False
 
     for arg in sys.argv[1:]:
         option = arg.split("=")
@@ -74,6 +76,37 @@ if __name__ == "__main__":
             PATH = option[1]
         if option[0] == '--agent':
             name_agent = option[1]
+        if option[0] == '--plot_all':
+            plot_all = True
+
+    if plot_all:
+        list_name = mFile.get_files_info_net()
+        info_metrcis = {}
+        for name_info in list_name:
+            dir_file = "./metrics_csv/" + name_info
+            print(dir_file)
+            df = pd.read_csv(dir_file)            
+            info_metrcis[name_info] = df
+        
+        ind = np.arange(24) #24 hours 
+        width = 0.35 
+        metrics = ["delay", "loss", "qlen"]
+        for metric in metrics:
+            is_first = True
+            for name_agent, df_info in info_metrcis.items():
+                if is_first:
+                    plt.bar(ind, df_info.loc[:, metric].tolist(), width, label=name_agent[:-4])
+                    is_first = False
+                    continue
+                plt.bar(ind + width, df_info.loc[:, metric].tolist(), width, label=name_agent[:-4])                
+        
+            plt.ylabel(metric + ' mean')
+            plt.title('Result of ' + metric)
+
+            plt.xticks(ind + width / 2, df_info.loc[:, "hour"].tolist())
+            plt.legend(loc='best')
+            plt.show()
+        exit()
 
     mFile.createDir('metrics_csv')
                     
