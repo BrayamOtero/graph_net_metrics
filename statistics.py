@@ -36,9 +36,10 @@ def generateHours():
             hours.append("{}:00".format(h))            
     return hours
 
-def saveInfo(delay, loss, qlen, hours, name_agent):
+def saveInfo(th, delay, loss, qlen, hours, name_agent):
     data = {
         'hour' : hours,
+        'th' : th,
         'delay' : delay,
         'loss' : loss,
         'qlen' : qlen
@@ -114,16 +115,19 @@ if __name__ == "__main__":
     delay = 0
     loss = 0
     qlen = 0
+    th = 0
     delay_historic = []
     loss_historic = []
     qlen_historic = []
+    th_historic = []
 
     for i in range(up_to_num):
         file = cvs_sorted[i]
         df = pd.read_csv("{}/Metrics/{}".format(PATH,file))        
         
         delay_mean = getMean(df, "delay")
-        loss_mean = getMean(df, "pkloss")        
+        loss_mean = getMean(df, "pkloss")  
+        th_mean = getMean(df, "used_bw")        
         q1_mean = getMean(df, "qlen->")
         q2_mean = getMean(df, "<-qlen")
 
@@ -132,10 +136,12 @@ if __name__ == "__main__":
         delay_historic.append(delay_mean)
         loss_historic.append(loss_mean)
         qlen_historic.append(q_mean)
+        th_historic.append(th_mean)
 
         delay = meanData(delay, delay_mean)
         loss = meanData(loss, loss_mean) 
-        qlen = meanData(qlen, q_mean)       
+        qlen = meanData(qlen, q_mean)
+        th = meanData(th, th_mean)         
     
     print("Delay mean: {}\nLoss mean: {}\nQlen mean {}".format(delay,loss,qlen))
     # print("Delay historic: ")
@@ -158,8 +164,12 @@ if __name__ == "__main__":
     delayXhour = getMetricXHour(delay_historic)
     lossXhour = getMetricXHour(loss_historic)
     qlenXhour = getMetricXHour(qlen_historic)
+    thXhour = getMetricXHour(th_historic)
 
-    saveInfo(delayXhour, lossXhour, qlenXhour, hours, name_agent)
+    saveInfo(thXhour, delayXhour, lossXhour, qlenXhour, hours, name_agent)
+
+    plt.bar(hours, thXhour)
+    plt.show()
 
     plt.bar(hours, delayXhour)
     plt.show()
