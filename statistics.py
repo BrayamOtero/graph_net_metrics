@@ -103,7 +103,7 @@ if __name__ == "__main__":
             plt.ylabel(metric + ' mean')
             plt.title('Result of ' + metric)
 
-            plt.xticks(ind + width/3, df_info.loc[:, "hour"].tolist())
+            plt.xticks(ind + width/num_agent, df_info.loc[:, "hour"].tolist())
             plt.legend(loc='best')
             plt.show()
         exit()
