@@ -82,6 +82,7 @@ if __name__ == "__main__":
 
     if plot_all:
         list_name = mFile.get_files_info_net()
+        num_agent = len(list_name)
         info_metrcis = {}
         for name_info in list_name:
             dir_file = "./metrics_csv/" + name_info
@@ -90,21 +91,19 @@ if __name__ == "__main__":
             info_metrcis[name_info] = df
         
         ind = np.arange(24) #24 hours 
-        width = 0.35 
-        metrics = ["delay", "loss", "qlen"]
+        width = 0.8/num_agent
+        metrics = ["th", "delay", "loss", "qlen"]
         for metric in metrics:
             is_first = True
-            for name_agent, df_info in info_metrcis.items():
-                if is_first:
-                    plt.bar(ind, df_info.loc[:, metric].tolist(), width, label=name_agent[:-4])
-                    is_first = False
-                    continue
-                plt.bar(ind + width, df_info.loc[:, metric].tolist(), width, label=name_agent[:-4])                
-        
+            cout_move = 0
+            for name_agent, df_info in info_metrcis.items():                                
+                plt.bar(ind + cout_move * width, df_info.loc[:, metric].tolist(), width, label=name_agent[:-4])                
+                cout_move += 1
+
             plt.ylabel(metric + ' mean')
             plt.title('Result of ' + metric)
 
-            plt.xticks(ind + width / 2, df_info.loc[:, "hour"].tolist())
+            plt.xticks(ind + width/3, df_info.loc[:, "hour"].tolist())
             plt.legend(loc='best')
             plt.show()
         exit()
