@@ -5,9 +5,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 
+import math
+
 import manageFiles as mFile
 
 PATH = '/home/brayam/Tesis/Daniela/DRSIR-DRL-routing-approach-for-SDN/SDNapps_proac'
+up_to_num = 0
 
 def getDelayLossMean():
     df = pd.read_csv("{}/Metrics/11_net_metrics.csv".format(PATH))
@@ -51,19 +54,25 @@ def saveInfo(th, delay, loss, qlen, hours, name_agent):
 '''
 Como por cada hora de trafico se hizo dos monitoreos se agrupan entre dos
 '''
-def getMetricXHour(metric_historic):
+def getMetricXHour(metric_historic):    
     # en la primer monitoreo no se capturo trafico y
     # los ultimos dos tampoco, solo hasta el 48
     metricsXhour = []
-    for i in range(1,48,2):
-        mean = (metric_historic[i] + metric_historic[i+1])/2
+    # como se va dividir el monitoreo
+    factor = up_to_num/24
+    since_index = 0
+    for i in range(24):
+        to_index = math.ceil(factor*(i + 1))
+        lst_hour = metric_historic[since_index : to_index]        
+        mean = sum(lst_hour)/len(lst_hour)        
         metricsXhour.append(mean)
+        since_index = to_index    
     return metricsXhour
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:        
         raise Exception('Es necesario colocar un argumento')        
-    up_to_num = 0
+    
     #nombre del agente para guardarlo en la csv
     name_agent = "default"
     #graficar todos los datos de los agentes DRL
