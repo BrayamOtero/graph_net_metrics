@@ -167,7 +167,7 @@ if __name__ == "__main__":
 
         delay_mean = getMean(df, "delay")
         loss_mean = getMean(df, "pkloss")
-        th_mean = getThroughput(df)
+        th_mean = getMean(df, "used_bw")/1000 # EL bw se escala a 10^3
         q1_mean = getMean(df, "qlen->")
         q2_mean = getMean(df, "<-qlen")
 
@@ -183,7 +183,7 @@ if __name__ == "__main__":
         qlen = meanData(qlen, q_mean)
         th = meanData(th, th_mean)         
 
-    print("Delay mean: {}\nLoss mean: {}\nQlen mean {}".format(delay,loss,qlen))
+    print("Throughput mean: {}\n Delay mean: {}\nLoss mean: {}\nQlen mean {}".format(th, delay,loss,qlen))
     # print("Delay historic: ")
     # print(delay_historic)
     # print("Loss historic: ")
