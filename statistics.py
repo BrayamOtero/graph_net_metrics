@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
+import re
 
 import math
 
@@ -11,6 +12,9 @@ import manageFiles as mFile
 
 PATH = '/home/brayam/Tesis/Daniela/DRSIR-DRL-routing-approach-for-SDN/SDNapps_proac'
 up_to_num = 0
+valid_monitoring = 0
+
+capacity_links = {}
 
 def getDelayLossMean():
     df = pd.read_csv("{}/Metrics/11_net_metrics.csv".format(PATH))
@@ -51,6 +55,30 @@ def saveInfo(th, delay, loss, qlen, hours, name_agent):
 
     df.to_csv(''.join(['./metrics_csv/metrics_',name_agent, '.csv']), index=False)
 
+def getThroughput(df):
+    th = 0
+    for i in df.index:
+        if df["free_bw"][i] == 0.0:
+            link = (df["node1"][i], df["node2"][i])
+            th += getCapacityLink(link) * 1000
+        else:
+            th += df["used_bw"][i]/1000
+        print(th)
+    th = th/37
+    return th# son 37 enlaces
+
+
+def getCapacityLink(link):
+    if len(capacity_links) == 0:        
+        getCapacityLinks()
+    
+    return capacity_links[link]    
+def getCapacityLinks():
+    with open('bw.txt') as f:
+        for line in f:
+            data = line.split(',')
+            link = (int(data[0]), int(data[1]))
+            capacity_links[link] = float(data[3])    
 '''
 Como por cada hora de trafico se hizo dos monitoreos se agrupan entre dos
 '''
@@ -59,7 +87,7 @@ def getMetricXHour(metric_historic):
     # los ultimos dos tampoco, solo hasta el 48
     metricsXhour = []
     # como se va dividir el monitoreo
-    factor = up_to_num/24
+    factor = valid_monitoring/24
     since_index = 0
     for i in range(24):
         to_index = math.ceil(factor*(i + 1))
@@ -129,13 +157,17 @@ if __name__ == "__main__":
     qlen_historic = []
     th_historic = []
 
-    for i in range(up_to_num):
-        file = cvs_sorted[i]
-        df = pd.read_csv("{}/Metrics/{}".format(PATH,file))        
-        
+    num_file = 0
+	
+    while (num_file != up_to_num):
+        valid_monitoring += 1
+        file = cvs_sorted[valid_monitoring]
+        num_file = int(re.findall('[0-9]+', file)[0])
+        df = pd.read_csv("{}/Metrics/{}".format(PATH,file))
+
         delay_mean = getMean(df, "delay")
-        loss_mean = getMean(df, "pkloss")  
-        th_mean = getMean(df, "used_bw")        
+        loss_mean = getMean(df, "pkloss")
+        th_mean = getThroughput(df)
         q1_mean = getMean(df, "qlen->")
         q2_mean = getMean(df, "<-qlen")
 
@@ -147,21 +179,21 @@ if __name__ == "__main__":
         th_historic.append(th_mean)
 
         delay = meanData(delay, delay_mean)
-        loss = meanData(loss, loss_mean) 
+        loss = meanData(loss, loss_mean)
         qlen = meanData(qlen, q_mean)
         th = meanData(th, th_mean)         
-    
+
     print("Delay mean: {}\nLoss mean: {}\nQlen mean {}".format(delay,loss,qlen))
     # print("Delay historic: ")
     # print(delay_historic)
     # print("Loss historic: ")
     # print(loss_historic)
-    with open('./metrics_csv/metric_info.csv','w') as csvfile:
-        header_names = ['count','delay','pkloss', 'qlen']
-        file = csv.writer(csvfile, delimiter=',',quotechar='|', quoting=csv.QUOTE_MINIMAL)        
-        file.writerow(header_names)
-        for i in range(up_to_num):            
-            file.writerow([i, round(delay_historic[i],3), round(loss_historic[i],4), round(qlen_historic[i],3)])
+    #with open('./metrics_csv/metric_info.csv','w') as csvfile:
+    #    header_names = ['count','delay','pkloss', 'qlen']
+    #    file = csv.writer(csvfile, delimiter=',',quotechar='|', quoting=csv.QUOTE_MINIMAL)        
+    #    file.writerow(header_names)
+    #    for i in range(up_to_num):            
+    #        file.writerow([i, round(delay_historic[i],3), round(loss_historic[i],4), round(qlen_historic[i],3)])
 
     # plt.bar(['delay', 'loss', 'qlen'], [delay, loss*100, qlen*100], width=0.4)
     # plt.show()
